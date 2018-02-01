@@ -39,6 +39,7 @@ public class Robot extends TimedRobot {
 	WPI_TalonSRX _frontRightDrive = new WPI_TalonSRX(2);
 	WPI_TalonSRX _rearLeftDrive = new WPI_TalonSRX(3);
 	WPI_TalonSRX _rearRightDrive = new WPI_TalonSRX(1);
+	//being depricated isnt an issue 
 	RobotDrive chassis=new RobotDrive(_frontLeftDrive, _frontRightDrive , _rearLeftDrive, _rearRightDrive );
 	Joystick joy1=new Joystick(0);
 	Joystick joy2=new Joystick(1);
