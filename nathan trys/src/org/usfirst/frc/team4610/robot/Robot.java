@@ -46,13 +46,17 @@ public class Robot extends TimedRobot {
 	DoubleSolenoid s1=new DoubleSolenoid(1,2);
 	Command m_autonomousCommand;
 	SendableChooser<Command> m_chooser = new SendableChooser<>();
+		//*** commented out code for things not get on the bot 
 	// the folowing is fow the intake/outake 
-	Victor left=new Victor(1);
-	Victor right=new Victor(2); 
+		//Victor leftIntake=new Victor(1);
+		//Victor rightIntake=new Victor(2); 
+	
 	// the following is for the elevator 
 		//Victor e1=new Victor(3);
 		//Victor e2=new Victor(4); 
-
+	
+	// this section is for the climber
+		//Victor climb=new Victor(5);
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -148,23 +152,38 @@ public class Robot extends TimedRobot {
 				s1.set(DoubleSolenoid.Value.kReverse);
 			}
 		// following is intake
-		if(joy1.getRawButton(3))
-		{
-			left.set(1);
-			right.set(-1);
-		}
-		else if(joy1.getRawButton(4))
-		{
-			left.set(-1);
-			right.set(1);
-		}
-		else 
-		{
-			left.set(0);
-			right.set(0);
-		}
+			//**** code is there just commented out untill on bot
+			
+		//if(joy1.getRawButton(3))
+		//{
+		//	leftIntake.set(1);
+		//	rightIntake.set(-1);
+		//}
+		//else if(joy1.getRawButton(4))
+		//{
+		//leftIntake.set(-1);
+		//rightIntake.set(1);
+		//}
+		//else 
+		//{
+		//	leftIntake.set(0);
+		//	rightIntake.set(0);
+		//}
+		
 		// following is elevator
 		
+		// following is climber
+			//**** code is there just commented out untill on bot
+			
+			//if(joy1.getRawButton(1))
+			//{
+				//climb.set(1);
+			
+			//}
+			//else 
+			//{
+				//climb.set(0);
+			//}
 		
 		Scheduler.getInstance().run();
 	}
