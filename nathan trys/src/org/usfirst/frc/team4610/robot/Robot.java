@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -45,6 +46,12 @@ public class Robot extends TimedRobot {
 	DoubleSolenoid s1=new DoubleSolenoid(1,2);
 	Command m_autonomousCommand;
 	SendableChooser<Command> m_chooser = new SendableChooser<>();
+	// the folowing is fow the intake/outake 
+	Victor left=new Victor(1);
+	Victor right=new Victor(2); 
+	// the following is for the elevator 
+		//Victor e1=new Victor(3);
+		//Victor e2=new Victor(4); 
 
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -130,6 +137,7 @@ public class Robot extends TimedRobot {
 	public void teleopPeriodic() {
 		while(isOperatorControl()&&isEnabled())
 		{
+		// following is drive train 
 			chassis.tankDrive(joy1, joy2);
 			if(joy2.getRawButton(3))
 			{
@@ -139,6 +147,23 @@ public class Robot extends TimedRobot {
 			{
 				s1.set(DoubleSolenoid.Value.kReverse);
 			}
+		// following is intake
+		if(joy1.getRawButton(3))
+		{
+			left.set(1);
+			right.set(-1);
+		}
+		else if(joy1.getRawButton(4))
+		{
+			left.set(-1);
+			right.set(1);
+		}
+		else 
+		{
+			left.set(0);
+			right.set(0);
+		}
+		// following is elevator
 		
 		
 		Scheduler.getInstance().run();
