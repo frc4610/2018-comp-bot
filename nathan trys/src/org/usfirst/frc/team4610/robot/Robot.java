@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -35,12 +34,17 @@ public class Robot extends TimedRobot {
 			= new ExampleSubsystem();
 	public static OI m_oi;
 	//the wpi talons are the 4 motors for the drive base 
-	WPI_TalonSRX _frontLeftDrive = new WPI_TalonSRX(4);
-	WPI_TalonSRX _frontRightDrive = new WPI_TalonSRX(2);
-	WPI_TalonSRX _rearLeftDrive = new WPI_TalonSRX(3);
-	WPI_TalonSRX _rearRightDrive = new WPI_TalonSRX(1);
+	//in order to address (the number in parantehesis, look at the internet
+	// explorer (which is needed) page 172.22.11.2 if using usb to address the cam motors to
+	// whatever you write here
+	//update firmware may be nessesary
+	//screensteps has more info if needed 
+	WPI_TalonSRX frontLeft = new WPI_TalonSRX(4);
+	WPI_TalonSRX frontRight = new WPI_TalonSRX(2);
+	WPI_TalonSRX rearLeft = new WPI_TalonSRX(3);
+	WPI_TalonSRX rearRight = new WPI_TalonSRX(1);
 	//being depricated isnt an issue 
-	RobotDrive chassis=new RobotDrive(_frontLeftDrive, _frontRightDrive , _rearLeftDrive, _rearRightDrive );
+	RobotDrive chassis=new RobotDrive(frontLeft, frontRight , rearLeft, rearRight );
 	Joystick joy1=new Joystick(0);
 	Joystick joy2=new Joystick(1);
 	Compressor c1=new Compressor();
@@ -70,6 +74,7 @@ public class Robot extends TimedRobot {
 		//_rearRightDrive.follow(_frontRightDrive);
 		//_rearLeftDrive.follow(_frontLeftDrive);
 		// chooser.addObject("My Auto", new MyAutoCommand());
+		//this is one option we have. also we can set it to inverted 
 		SmartDashboard.putData("Auto mode", m_chooser);
 	}
 
