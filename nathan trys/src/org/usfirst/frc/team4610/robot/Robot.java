@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
+import edu.wpi.first.wpilibj.drive.RobotDriveBase.MotorType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team4610.robot.commands.ExampleCommand;
@@ -37,14 +38,14 @@ public class Robot extends TimedRobot {
 	//in order to address (the number in parantehesis, look at the internet
 	// explorer (which is needed) page 172.22.11.2 if using usb to address the cam motors to
 	// whatever you write here
-	//update firmware may be nessesary
+	//************update firmware may be nessesary***************
 	//screensteps has more info if needed 
-	WPI_TalonSRX frontLeft = new WPI_TalonSRX(4);
-	WPI_TalonSRX frontRight = new WPI_TalonSRX(2);
-	WPI_TalonSRX rearLeft = new WPI_TalonSRX(3);
-	WPI_TalonSRX rearRight = new WPI_TalonSRX(1);
+	public WPI_TalonSRX frontLeft = new WPI_TalonSRX(4);
+	public WPI_TalonSRX frontRight = new WPI_TalonSRX(2);
+	public WPI_TalonSRX rearLeft = new WPI_TalonSRX(3);
+	public WPI_TalonSRX rearRight = new WPI_TalonSRX(1);
 	//being depricated isnt an issue 
-	RobotDrive chassis=new RobotDrive(frontLeft, frontRight , rearLeft, rearRight );
+	RobotDrive chassis=new RobotDrive(frontRight, rearRight , frontLeft, rearLeft );
 	Joystick joy1=new Joystick(0);
 	Joystick joy2=new Joystick(1);
 	Compressor c1=new Compressor();
@@ -75,6 +76,7 @@ public class Robot extends TimedRobot {
 		//_rearLeftDrive.follow(_frontLeftDrive);
 		// chooser.addObject("My Auto", new MyAutoCommand());
 		//this is one option we have. also we can set it to inverted 
+		
 		SmartDashboard.putData("Auto mode", m_chooser);
 	}
 
@@ -149,11 +151,11 @@ public class Robot extends TimedRobot {
 		{
 		// following is drive train 
 			chassis.tankDrive(joy1, joy2);
-			if(joy2.getRawButton(3))
+			if(joy1.getRawButton(3))
 			{
 				s1.set(DoubleSolenoid.Value.kForward);
 			}
-			if(joy2.getRawButton(4))
+			if(joy1.getRawButton(4))
 			{
 				s1.set(DoubleSolenoid.Value.kReverse);
 			}
