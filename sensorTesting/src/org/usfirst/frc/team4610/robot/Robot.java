@@ -7,22 +7,13 @@
 
 package org.usfirst.frc.team4610.robot;
 
-import edu.wpi.first.wpilibj.CameraServer;
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
-import edu.wpi.first.wpilibj.drive.RobotDriveBase.MotorType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team4610.robot.commands.ExampleCommand;
 import org.usfirst.frc.team4610.robot.subsystems.ExampleSubsystem;
-
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -35,38 +26,10 @@ public class Robot extends TimedRobot {
 	public static final ExampleSubsystem kExampleSubsystem
 			= new ExampleSubsystem();
 	public static OI m_oi;
-	//the wpi talons are the 4 motors for the drive base 
-	//in order to address (the number in parantehesis, look at the internet
-	// explorer (which is needed) page 172.22.11.2 if using usb to address the cam motors to
-	// whatever you write here
-	//************update firmware may be nessesary***************
-	//screensteps has more info if needed 
-	public WPI_TalonSRX frontLeft = new WPI_TalonSRX(4);
-	public WPI_TalonSRX frontRight = new WPI_TalonSRX(2);
-	public WPI_TalonSRX rearLeft = new WPI_TalonSRX(3);
-	public WPI_TalonSRX rearRight = new WPI_TalonSRX(1);
-	//being depricated isnt an issue 
-	RobotDrive chassis=new RobotDrive(frontRight, rearRight , frontLeft, rearLeft );
-	Joystick joy1=new Joystick(0);
-	Joystick joy2=new Joystick(1);
-	Compressor c1=new Compressor();
-	DoubleSolenoid s1=new DoubleSolenoid(1,2);
+
 	Command m_autonomousCommand;
 	SendableChooser<Command> m_chooser = new SendableChooser<>();
-	SendableChooser<String> position = new SendableChooser<>();
-	String gameData = DriverStation.getInstance().getGameSpecificMessage();
-	String testPosition = "";
-		//*** commented out code for things not get on the bot 
-	// the folowing is fow the intake/outake 
-		//Victor leftIntake=new Victor(1);
-		//Victor rightIntake=new Victor(2); 
-	
-	// the following is for the elevator 
-		//Victor e1=new Victor(3);
-		//Victor e2=new Victor(4); 
-	
-	// this section is for the climber
-		//Victor climb=new Victor(5);
+
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -75,12 +38,7 @@ public class Robot extends TimedRobot {
 	public void robotInit() {
 		m_oi = new OI();
 		m_chooser.addDefault("Default Auto", new ExampleCommand());
-		CameraServer.getInstance().startAutomaticCapture();
-		//_rearRightDrive.follow(_frontRightDrive);
-		//_rearLeftDrive.follow(_frontLeftDrive);
 		// chooser.addObject("My Auto", new MyAutoCommand());
-		//this is one option we have. also we can set it to inverted 
-		
 		SmartDashboard.putData("Auto mode", m_chooser);
 	}
 
@@ -113,12 +71,7 @@ public class Robot extends TimedRobot {
 	@Override
 	public void autonomousInit() {
 		m_autonomousCommand = m_chooser.getSelected();
-		position.addObject("Left", "L");
-		position.addDefault("Middle", "M");
-		position.addObject("Right", "R");
-		SmartDashboard.putData("Auto Mode", position);
-		testPosition = position.getSelected();
-		// ***put back in for testing ***gameData = "LRR";
+
 		/*
 		 * String autoSelected = SmartDashboard.getString("Auto Selector",
 		 * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
@@ -137,21 +90,6 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		while(isEnabled() && isAutonomous())
-		{
-			if((position.getSelected()).charAt(0)==gameData.charAt(1))
-			{
-				//scale code
-			}
-			else if((position.getSelected()).charAt(0)==gameData.charAt(0))
-			{
-				//switch code
-			}
-			else
-			{
-				//move forward
-			}
-		}
 		Scheduler.getInstance().run();
 	}
 
@@ -171,54 +109,7 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		while(isOperatorControl()&&isEnabled())
-		{
-		// following is drive train 
-			chassis.tankDrive(joy1, joy2);
-			if(joy1.getRawButton(3))
-			{
-				s1.set(DoubleSolenoid.Value.kForward);
-			}
-			if(joy1.getRawButton(4))
-			{
-				s1.set(DoubleSolenoid.Value.kReverse);
-			}
-		// following is intake
-			//**** code is there just commented out untill on bot
-			
-		//if(joy1.getRawButton(3))
-		//{
-		//	leftIntake.set(1);
-		//	rightIntake.set(-1);
-		//}
-		//else if(joy1.getRawButton(4))
-		//{
-		//leftIntake.set(-1);
-		//rightIntake.set(1);
-		//}
-		//else 
-		//{
-		//	leftIntake.set(0);
-		//	rightIntake.set(0);
-		//}
-		
-		// following is elevator
-		
-		// following is climber
-			//**** code is there just commented out untill on bot
-			
-			//if(joy1.getRawButton(1))
-			//{
-				//climb.set(1);
-			
-			//}
-			//else 
-			//{
-				//climb.set(0);
-			//}
-		
 		Scheduler.getInstance().run();
-	}
 	}
 
 	/**
