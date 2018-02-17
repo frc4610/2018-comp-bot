@@ -9,6 +9,8 @@ package org.usfirst.frc.team4610.robot;
 
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.Counter;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
@@ -41,32 +43,60 @@ public class Robot extends TimedRobot {
 	// whatever you write here
 	//************update firmware may be nessesary***************
 	//screensteps has more info if needed 
-	public WPI_TalonSRX frontLeft = new WPI_TalonSRX(4);
-	public WPI_TalonSRX frontRight = new WPI_TalonSRX(2);
-	public WPI_TalonSRX rearLeft = new WPI_TalonSRX(3);
-	public WPI_TalonSRX rearRight = new WPI_TalonSRX(1);
+	//public WPI_TalonSRX driveFrontLeft4 = new WPI_TalonSRX(4);
+	//public WPI_TalonSRX driveFrontRight2 = new WPI_TalonSRX(2);
+	//public WPI_TalonSRX driveRearLeft3 = new WPI_TalonSRX(3);
+	//public WPI_TalonSRX driveRearRight1 = new WPI_TalonSRX(1);
 	//being depricated isnt an issue 
-	RobotDrive chassis=new RobotDrive(frontRight, rearRight , frontLeft, rearLeft );
-	Joystick joy1=new Joystick(0);
-	Joystick joy2=new Joystick(1);
-	Compressor c1=new Compressor();
-	DoubleSolenoid s1=new DoubleSolenoid(1,2);
+	//RobotDrive chassis=new RobotDrive(driveFrontRight2, driveRearRight1 , driveFrontLeft4, driveRearLeft3 );
+	Joystick gamePad=new Joystick(0);
+	Joystick control=new Joystick(1);
+	//Compressor c1=new Compressor();
+	//DoubleSolenoid s1=new DoubleSolenoid(1,2);
 	Command m_autonomousCommand;
 	SendableChooser<Command> m_chooser = new SendableChooser<>();
+	//user input for robot position
 	SendableChooser<String> position = new SendableChooser<>();
 	String gameData = DriverStation.getInstance().getGameSpecificMessage();
 	String testPosition = "";
-		//*** commented out code for things not get on the bot 
-	// the folowing is fow the intake/outake 
-		//Victor leftIntake=new Victor(1);
-		//Victor rightIntake=new Victor(2); 
+	//Things for automated intake
+	boolean intakeAuto = true;
+	boolean intakeAutoRunning = false;
+	DigitalInput intakeSwitch = new DigitalInput(9);
+		 //commented out code for things not get on the bot 
+	 //the folowing is fow the intake/outake 
+	WPI_TalonSRX intakeLeft5 = new WPI_TalonSRX(5);
+	WPI_TalonSRX intakeRight6 = new WPI_TalonSRX(6); 
+	Counter intakeCounter = new Counter(intakeSwitch);
 	
-	// the following is for the elevator 
-		//Victor e1=new Victor(3);
-		//Victor e2=new Victor(4); 
+	// the following is for the lift 
+	WPI_TalonSRX lift7=new WPI_TalonSRX(7);
+	int liftPosition = 1;
+	DigitalInput liftSwitchLowest = new DigitalInput(8);
+	DigitalInput intakeSwitchSwitch = new DigitalInput(7);
+	DigitalInput intakeSwitchScale = new DigitalInput(6);
+	Counter liftCounter1 = new Counter(liftSwitchLowest);
+	Counter liftCounter2 = new Counter(intakeSwitchSwitch);
+	Counter liftCounter3 = new Counter(intakeSwitchScale);
+	int liftMovingTo = 0;
+	//EXAMPLE ENCODER THINGS
+	//Encoder exampleEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
+	/*sampleEncoder.setMaxPeriod(.1);
+	sampleEncoder.setMinRate(10);
+	sampleEncoder.setDistancePerPulse(5); IMPORTANT - sets distance to measure per pulse(duh)
+	sameEncoder.get();  IMPORTANT finds count (pulses)
+	sampleEncoder.setReverseDirection(true);
+	sampleEncoder.setSamplesToAverage(7);
+	sampleEncoder.reset();
+	USE .get TO FIND THESE THINGS
+	*/
+	//
+	//WPI_TalonSRX liftBackup8=new WPI_TalonSRX(8);
+	
 	
 	// this section is for the climber
-		//Victor climb=new Victor(5);
+//		WPI_TalonSRX climbLeft9=new WPI_TalonSRX(9);
+	//	WPI_TalonSRX climbRight10=new WPI_TalonSRX(10);
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -174,52 +204,155 @@ public class Robot extends TimedRobot {
 		while(isOperatorControl()&&isEnabled())
 		{
 		// following is drive train 
-			chassis.tankDrive(joy1, joy2);
-			if(joy1.getRawButton(3))
-			{
-				s1.set(DoubleSolenoid.Value.kForward);
-			}
-			if(joy1.getRawButton(4))
-			{
-				s1.set(DoubleSolenoid.Value.kReverse);
-			}
-		// following is intake
-			//**** code is there just commented out untill on bot
+			//chassis.tankDrive(joy1, joy2);
+			//intakeAuto is a bool to toggele whether the intake
+			//function is completed auotmatically or when the user releases the button
+			//all the if statements are to allow other code to run
 			
-		//if(joy1.getRawButton(3))
-		//{
-		//	leftIntake.set(1);
-		//	rightIntake.set(-1);
-		//}
-		//else if(joy1.getRawButton(4))
-		//{
-		//leftIntake.set(-1);
-		//rightIntake.set(1);
-		//}
-		//else 
-		//{
-		//	leftIntake.set(0);
-		//	rightIntake.set(0);
-		//}
+			//if(joy1.getRawButton(3))
+		//	{
+		//		s1.set(DoubleSolenoid.Value.kForward);
+		//	}
+		//	else if(joy1.getRawButton(4))
+		//	{
+		//		s1.set(DoubleSolenoid.Value.kReverse);
 		
-		// following is elevator
-		
+		// following is intake
+			//code is there just commented out untill on bot
+			/*if((intakeAuto &&intakeAutoRunning) ||(intakeAuto &&control.getRawButton(5)))
+			{
+				intakeLeft5.set(-1);
+				intakeRight6.set(1);
+				if(!intakeAutoRunning)
+				{
+					intakeAutoRunning=true;
+				}
+				if(intakeCounter.get()>0)
+				{
+					intakeLeft5.set(0);
+					intakeRight6.set(0);
+					intakeAutoRunning = false;
+					intakeCounter.reset();
+				}
+			}	
+			else if(control.getRawButton(5))
+			{
+				intakeLeft5.set(-1);
+				intakeRight6.set(1);
+			}
+			else if(control.getRawButton(6))
+			{
+				intakeLeft5.set(1);
+				intakeRight6.set(-1);
+			}
+			else 
+			{
+				intakeLeft5.set(0);
+				intakeRight6.set(0);
+			}
+		if(control.getRawButton(10))
+		{
+			intakeAuto = true;
+		}
+		else if (control.getRawButton(12))
+		{
+			intakeAuto = false;
+		}*/
+		 //following is lift with switches
+			/*if(liftMovingTo == 1||(liftMovingTo == 0 &&control.getRawButton(7)))
+			{
+				if(liftPosition != 1)
+				{
+					if(intakeCounter.get()>0)
+					{
+						lift7.set(0);
+						liftMovingTo = 0;
+						liftPosition = 1;
+						liftCounter1.reset();
+					}
+					else
+					{
+						lift7.set(-1);
+						liftMovingTo = 1;
+					}
+				}
+			}
+			else if(liftMovingTo == 2||(liftMovingTo == 0 &&control.getRawButton(9)))
+			{
+				if(liftPosition == 1)
+				{
+					if(intakeCounter.get()>0)
+					{
+						lift7.set(0);
+						liftMovingTo = 0;
+						liftPosition = 2;
+						liftCounter2.reset();
+					}
+					else
+					{
+						lift7.set(1);
+						liftMovingTo = 2;
+					}
+				}
+				else if(liftPosition == 3)
+				{
+					if(intakeCounter.get()>0)
+					{
+						lift7.set(0);
+						liftMovingTo = 0;
+						liftPosition = 2;
+						liftCounter2.reset();
+					}
+					else
+					{
+						lift7.set(-1);
+						liftMovingTo = 2;
+					}
+				}
+				
+			}
+			if (liftMovingTo == 3||(liftMovingTo == 0 &&control.getRawButton(11)))
+				{
+				if(liftPosition != 3)
+				{
+					if(intakeCounter.get()>0)
+					{
+						lift7.set(0);
+						liftMovingTo = 0;
+						liftPosition = 3;
+						liftCounter3.reset();
+					}
+					else
+					{
+						lift7.set(1);
+						liftMovingTo = 3;
+					}
+				}	
+				}*/
+
 		// following is climber
 			//**** code is there just commented out untill on bot
 			
-			//if(joy1.getRawButton(1))
-			//{
-				//climb.set(1);
-			
-			//}
-			//else 
-			//{
-				//climb.set(0);
-			//}
+		/*	if(control.getRawButton(1))
+			{
+				climbLeft9.set(.25);
+				climbRight10.set(.25);
+			}
+			else if(control.getRawButton(2))
+			{
+				climbLeft9.set(-.25);
+				climbRight10.set(-.25);
+			}
+			else 
+			{
+				climbLeft9.set(0);
+				climbRight10.set(0);
+
+			}*/
 		
 		Scheduler.getInstance().run();
-	}
-	}
+	}}
+//	}
 
 	/**
 	 * This function is called periodically during test mode.
