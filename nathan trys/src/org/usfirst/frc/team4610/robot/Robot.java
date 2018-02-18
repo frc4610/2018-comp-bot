@@ -6,7 +6,7 @@
 /*----------------------------------------------------------------------------*/
 
 package org.usfirst.frc.team4610.robot;
-//test for Derek's Branch
+
 import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.Counter;
@@ -24,6 +24,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team4610.robot.commands.ExampleCommand;
 import org.usfirst.frc.team4610.robot.subsystems.ExampleSubsystem;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 /**
@@ -90,7 +93,8 @@ public class Robot extends TimedRobot {
 	sampleEncoder.reset();
 	USE .get TO FIND THESE THINGS
 	*/
-	//
+	//Encoder liftEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
+	//liftEncoder.setDistancePerPulse(5);
 	//WPI_TalonSRX liftBackup8=new WPI_TalonSRX(8);
 	
 	
@@ -187,6 +191,8 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void teleopInit() {
+		lift7.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 1, 10);
+		lift7.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
 		// This makes sure that the autonomous stops running when
 		// teleop starts running. If you want the autonomous to
 		// continue until interrupted by another command, remove
@@ -203,6 +209,8 @@ public class Robot extends TimedRobot {
 	public void teleopPeriodic() {
 		while(isOperatorControl()&&isEnabled())
 		{
+			lift7.set(ControlMode.PercentOutput, 0.1);
+			SmartDashboard.putNumber("Velocity", lift7.getSelectedSensorVelocity(0));
 		// following is drive train 
 			//chassis.tankDrive(joy1, joy2);
 			//intakeAuto is a bool to toggele whether the intake
@@ -258,6 +266,8 @@ public class Robot extends TimedRobot {
 		{
 			intakeAuto = false;
 		}*/
+			
+			
 		 //following is lift with switches
 			/*if(liftMovingTo == 1||(liftMovingTo == 0 &&control.getRawButton(7)))
 			{
@@ -309,7 +319,6 @@ public class Robot extends TimedRobot {
 						liftMovingTo = 2;
 					}
 				}
-				
 			}
 			if (liftMovingTo == 3||(liftMovingTo == 0 &&control.getRawButton(11)))
 				{
@@ -329,7 +338,79 @@ public class Robot extends TimedRobot {
 					}
 				}	
 				}*/
-
+			
+			
+			//lift with encoder
+			/*if(liftMovingTo == 1||(liftMovingTo == 0 &&control.getRawButton(7)))
+			{
+				if(liftPosition != 1)
+				{
+					if(liftEncoder.getDistance()>1)
+					{
+						lift7.set(0);
+						liftMovingTo = 0;
+						liftPosition = 1;
+						liftEncoder.reset();
+					}
+					else
+					{
+						lift7.set(-1);
+						liftMovingTo = 1;
+					}
+				}
+			}
+			else if(liftMovingTo == 2||(liftMovingTo == 0 &&control.getRawButton(9)))
+			{
+				if(liftPosition == 1)
+				{
+					if(liftEncoder.getDistance()>1)
+					{
+						lift7.set(0);
+						liftMovingTo = 0;
+						liftPosition = 2;
+						liftEncoder.reset();					}
+					else
+					{
+						lift7.set(1);
+						liftMovingTo = 2;
+					}
+				}
+				else if(liftPosition == 3)
+				{
+					if(liftEncoder.getDistance()>1)
+					{
+						lift7.set(0);
+						liftMovingTo = 0;
+						liftPosition = 2;
+						liftEncoder.reset();
+					}
+					else
+					{
+						lift7.set(-1);
+						liftMovingTo = 2;
+					}
+				}
+			}
+			if (liftMovingTo == 3||(liftMovingTo == 0 &&control.getRawButton(11)))
+				{
+				if(liftPosition != 3)
+				{
+					if(liftEncoder.getDistance()>1)
+					{
+						lift7.set(0);
+						liftMovingTo = 0;
+						liftPosition = 3;
+						liftEncoder.reset();
+					}
+					else
+					{
+						lift7.set(1);
+						liftMovingTo = 3;
+					}
+				}	
+				}*/
+			
+			
 		// following is climber
 			//**** code is there just commented out untill on bot
 			
