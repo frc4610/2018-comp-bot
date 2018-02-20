@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -28,6 +29,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.kauailabs.navx.frc.AHRS;
+import com.kauailabs.navx.frc.AHRS.SerialDataType;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -71,6 +74,8 @@ public class Robot extends TimedRobot {
 	WPI_TalonSRX intakeLeft5 = new WPI_TalonSRX(5);
 	WPI_TalonSRX intakeRight6 = new WPI_TalonSRX(6); 
 	Counter intakeCounter = new Counter(intakeSwitch);
+	boolean intakeFixer = false;
+	int intakeFixCounter = 0;
 	
 	// the following is for the lift 
 	WPI_TalonSRX lift7=new WPI_TalonSRX(7);
@@ -82,6 +87,10 @@ public class Robot extends TimedRobot {
 	Counter liftCounter2 = new Counter(intakeSwitchSwitch);
 	Counter liftCounter3 = new Counter(intakeSwitchScale);
 	int liftMovingTo = 0;
+	
+	//gyro things
+	AHRS gyro = new AHRS(SerialPort.Port.kUSB1);
+	
 	//EXAMPLE ENCODER THINGS
 	//Encoder exampleEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
 	/*sampleEncoder.setMaxPeriod(.1);
@@ -171,6 +180,7 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
+		//gyro.getAngle() for angle in auto
 		while(isEnabled() && isAutonomous())
 		{
 			if((position.getSelected()).charAt(0)==gameData.charAt(1))
@@ -191,8 +201,14 @@ public class Robot extends TimedRobot {
 
 	@Override
 	public void teleopInit() {
-		lift7.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 1, 10);
-		lift7.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);
+		//help for encoder at
+		//http://www.ctr-electronics.com/downloads/api/java/html/com/ctre/phoenix/motorcontrol/can/WPI_TalonSRX.html
+		//https://github.com/CrossTheRoadElec/Phoenix-Documentation/blob/master/Migration%20Guide.md
+		//https://www.chiefdelphi.com/forums/showthread.php?t=138641
+		lift7.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
+		//lift7.config_kP(.5, 10) ;
+		//lift7.config_kI(0, 10); 
+		//lift7.config_kD(0, 10); 
 		// This makes sure that the autonomous stops running when
 		// teleop starts running. If you want the autonomous to
 		// continue until interrupted by another command, remove
@@ -209,8 +225,8 @@ public class Robot extends TimedRobot {
 	public void teleopPeriodic() {
 		while(isOperatorControl()&&isEnabled())
 		{
-			lift7.set(ControlMode.PercentOutput, 0.1);
-			SmartDashboard.putNumber("Velocity", lift7.getSelectedSensorVelocity(0));
+			lift7.set(ControlMode.Position, 1);
+			lift7.set(10);
 		// following is drive train 
 			//chassis.tankDrive(joy1, joy2);
 			//intakeAuto is a bool to toggele whether the intake
@@ -238,9 +254,10 @@ public class Robot extends TimedRobot {
 				if(intakeCounter.get()>0)
 				{
 					intakeLeft5.set(0);
-					intakeRight6.set(0);
+					intakeFixer = true;
 					intakeAutoRunning = false;
 					intakeCounter.reset();
+					//add a lift code for ~3 inches for ramps/wire on floor
 				}
 			}	
 			else if(control.getRawButton(5))
@@ -252,11 +269,15 @@ public class Robot extends TimedRobot {
 			{
 				intakeLeft5.set(1);
 				intakeRight6.set(-1);
+				intakeFixer = false;
 			}
 			else 
 			{
-				intakeLeft5.set(0);
+				if(!intakeFixer)
+				{				
 				intakeRight6.set(0);
+				}
+				intakeLeft5.set(0);
 			}
 		if(control.getRawButton(10))
 		{
@@ -265,7 +286,20 @@ public class Robot extends TimedRobot {
 		else if (control.getRawButton(12))
 		{
 			intakeAuto = false;
-		}*/
+		}
+		
+		if(intakeFixer)
+		{
+			if(intakeFixCounter >= 50)
+			{
+				intakeRight6.set(0);
+				intakeFixer = false;
+				intakeFixCounter = -1;
+			}
+			intakeFixCounter += 1;
+		}
+		
+		*/
 			
 			
 		 //following is lift with switches
