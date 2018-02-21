@@ -451,13 +451,13 @@ public class Robot extends TimedRobot {
 			
 			if(control.getRawButton(1))
 			{
-				climbLeft9.set(.25);
-				climbRight10.set(.25);
+				climbLeft9.set(1);
+				climbRight10.set(1);
 			}
 			else if(control.getRawButton(2))
 			{
-				climbLeft9.set(-.25);
-				climbRight10.set(-.25);
+				climbLeft9.set(-1);
+				climbRight10.set(-1);
 			}
 			else 
 			{
