@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.drive.RobotDriveBase.MotorType;
@@ -70,28 +71,33 @@ public class Robot extends TimedRobot {
 	boolean intakeAutoRunning = false;
 	DigitalInput intakeSwitch = new DigitalInput(9);
 		 //commented out code for things not get on the bot 
-	 //the folowing is fow the intake/outake 
+	 //the folowing is for the intake/outake 
 	WPI_TalonSRX intakeLeft5 = new WPI_TalonSRX(5);
 	WPI_TalonSRX intakeRight6 = new WPI_TalonSRX(6); 
 	Counter intakeCounter = new Counter(intakeSwitch);
 	boolean intakeFixer = false;
 	int intakeFixCounter = 0;
-	
+	boolean intakeAuto2 = true;
 	// the following is for the lift 
 	WPI_TalonSRX lift7=new WPI_TalonSRX(7);
 	int liftPosition = 1;
-	DigitalInput liftSwitchLowest = new DigitalInput(8);
+	/*DigitalInput liftSwitchLowest = new DigitalInput(8);
 	DigitalInput intakeSwitchSwitch = new DigitalInput(7);
 	DigitalInput intakeSwitchScale = new DigitalInput(6);
 	Counter liftCounter1 = new Counter(liftSwitchLowest);
 	Counter liftCounter2 = new Counter(intakeSwitchSwitch);
-	Counter liftCounter3 = new Counter(intakeSwitchScale);
+	Counter liftCounter3 = new Counter(intakeSwitchScale);*/
+	//int liftPosition = 0; TRACKS POSITION IN COUNTS OF ENCODER -- ADD COUNT WHEN MOVING
+	//int liftBottom = 0; ADD 10-100 MORE COUNTS WHEN MOVING TO RESET
+	//int liftVault = 100; CHANGE	
+	//int liftSwitch = 200; CHANGE
+	//int liftSclae = 300; CHANGE
 	int liftMovingTo = 0;
 	
 	//gyro things
-	AHRS gyro = new AHRS(SerialPort.Port.kUSB1);
+	//AHRS gyro = new AHRS(SerialPort.Port.kUSB1);
 	
-	//EXAMPLE ENCODER THINGS
+	//EXAMPLE ENCODER THINGS --- only if into digital ports
 	//Encoder exampleEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
 	/*sampleEncoder.setMaxPeriod(.1);
 	sampleEncoder.setMinRate(10);
@@ -108,8 +114,8 @@ public class Robot extends TimedRobot {
 	
 	
 	// this section is for the climber
-//		WPI_TalonSRX climbLeft9=new WPI_TalonSRX(9);
-	//	WPI_TalonSRX climbRight10=new WPI_TalonSRX(10);
+		WPI_TalonSRX climbLeft9=new WPI_TalonSRX(9);
+		WPI_TalonSRX climbRight10=new WPI_TalonSRX(10);
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -183,6 +189,20 @@ public class Robot extends TimedRobot {
 		//gyro.getAngle() for angle in auto
 		while(isEnabled() && isAutonomous())
 		{
+			//commented out till testing
+			/*chassis.tankDrive(-1, -1);
+			Timer.delay(.5);
+			chassis.tankDrive(1,1);
+			Timer.delay(.5)
+			intakeLeft5.set(1);
+			intakeRight6.set(1);
+			Timer.delay(.5);
+			intakeLeft5.set(0);
+			intakeRight6.set(0);
+			Timer.delay(.5);
+			MOVE LIFT UP TO VAULT
+			*/
+			//Move back and forth then intake cube (should be ready, no moving here)
 			if((position.getSelected()).charAt(0)==gameData.charAt(1))
 			{
 				//scale code
@@ -205,7 +225,7 @@ public class Robot extends TimedRobot {
 		//http://www.ctr-electronics.com/downloads/api/java/html/com/ctre/phoenix/motorcontrol/can/WPI_TalonSRX.html
 		//https://github.com/CrossTheRoadElec/Phoenix-Documentation/blob/master/Migration%20Guide.md
 		//https://www.chiefdelphi.com/forums/showthread.php?t=138641
-		lift7.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
+	//	lift7.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
 		//lift7.config_kP(.5, 10) ;
 		//lift7.config_kI(0, 10); 
 		//lift7.config_kD(0, 10); 
@@ -225,8 +245,19 @@ public class Robot extends TimedRobot {
 	public void teleopPeriodic() {
 		while(isOperatorControl()&&isEnabled())
 		{
-			lift7.set(ControlMode.Position, 1);
-			lift7.set(10);
+			if(control.getRawButton(8))
+			{
+				//lift7.set(Controlmode.Position, 0);
+				lift7.set(1);
+			}
+			else if(control.getRawButton(10))
+			{
+				lift7.set(-1);
+			}
+			else
+			{
+				lift7.set(0);
+			}
 		// following is drive train 
 			//chassis.tankDrive(joy1, joy2);
 			//intakeAuto is a bool to toggele whether the intake
@@ -242,8 +273,8 @@ public class Robot extends TimedRobot {
 		//		s1.set(DoubleSolenoid.Value.kReverse);
 		
 		// following is intake
-			//code is there just commented out untill on bot
-			/*if((intakeAuto &&intakeAutoRunning) ||(intakeAuto &&control.getRawButton(5)))
+			//code is there just commented out until on bot
+			/*if((intakeAuto &&intakeAutoRunning) ||(intakeAuto && inatakeAuto2 &&control.getRawButton(5)))
 			{
 				intakeLeft5.set(-1);
 				intakeRight6.set(1);
@@ -257,7 +288,8 @@ public class Robot extends TimedRobot {
 					intakeFixer = true;
 					intakeAutoRunning = false;
 					intakeCounter.reset();
-					//add a lift code for ~3 inches for ramps/wire on floor
+					intakeAuto2 = false;
+					//add a lift code to vault position
 				}
 			}	
 			else if(control.getRawButton(5))
@@ -270,6 +302,7 @@ public class Robot extends TimedRobot {
 				intakeLeft5.set(1);
 				intakeRight6.set(-1);
 				intakeFixer = false;
+				intakeAuto2 = true;
 			}
 			else 
 			{
@@ -301,7 +334,7 @@ public class Robot extends TimedRobot {
 		
 		*/
 			
-			
+	
 		 //following is lift with switches
 			/*if(liftMovingTo == 1||(liftMovingTo == 0 &&control.getRawButton(7)))
 			{
@@ -375,80 +408,48 @@ public class Robot extends TimedRobot {
 			
 			
 			//lift with encoder
-			/*if(liftMovingTo == 1||(liftMovingTo == 0 &&control.getRawButton(7)))
+			/*if(control.getRawButton(7))
 			{
-				if(liftPosition != 1)
+				if(liftPosition != liftBottom)
 				{
-					if(liftEncoder.getDistance()>1)
-					{
-						lift7.set(0);
-						liftMovingTo = 0;
-						liftPosition = 1;
-						liftEncoder.reset();
-					}
-					else
-					{
-						lift7.set(-1);
-						liftMovingTo = 1;
-					}
+					lift7.set(liftPosition + 50);
+					liftPosition = 0;
 				}
 			}
-			else if(liftMovingTo == 2||(liftMovingTo == 0 &&control.getRawButton(9)))
+			else if(control.getRawButton(9)))
 			{
-				if(liftPosition == 1)
+				if(liftPosition != lift)
 				{
-					if(liftEncoder.getDistance()>1)
-					{
-						lift7.set(0);
-						liftMovingTo = 0;
-						liftPosition = 2;
-						liftEncoder.reset();					}
-					else
-					{
-						lift7.set(1);
-						liftMovingTo = 2;
-					}
-				}
-				else if(liftPosition == 3)
-				{
-					if(liftEncoder.getDistance()>1)
-					{
-						lift7.set(0);
-						liftMovingTo = 0;
-						liftPosition = 2;
-						liftEncoder.reset();
-					}
-					else
-					{
-						lift7.set(-1);
-						liftMovingTo = 2;
-					}
+					lift7.set(-liftSwitch + liftPosition);
+					liftPosition = liftSwitch;
 				}
 			}
-			if (liftMovingTo == 3||(liftMovingTo == 0 &&control.getRawButton(11)))
+			if (control.getRawButton(11)))
 				{
-				if(liftPosition != 3)
+				if(liftPosition != lift)
 				{
-					if(liftEncoder.getDistance()>1)
-					{
-						lift7.set(0);
-						liftMovingTo = 0;
-						liftPosition = 3;
-						liftEncoder.reset();
-					}
-					else
-					{
-						lift7.set(1);
-						liftMovingTo = 3;
-					}
+					lift7.set(-liftScale + liftPosition);
+					liftPosition = liftScale;
 				}	
 				}*/
+			
+			//following is lift manual
+			/*
+			 if(control.getRawButton(6))
+			 {
+			 lift7.set(-10);
+			 }
+			 else if(control.getRawButton(8))
+			 {
+			 lift7.set(10);
+			 }
+			 */
 			
 			
 		// following is climber
 			//**** code is there just commented out untill on bot
 			
-		/*	if(control.getRawButton(1))
+			if(control.getRawButton(1))
 			{
 				climbLeft9.set(.25);
 				climbRight10.set(.25);
@@ -463,7 +464,7 @@ public class Robot extends TimedRobot {
 				climbLeft9.set(0);
 				climbRight10.set(0);
 
-			}*/
+			}
 		
 		Scheduler.getInstance().run();
 	}}
