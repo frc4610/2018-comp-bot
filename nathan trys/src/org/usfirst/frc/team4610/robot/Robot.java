@@ -26,6 +26,14 @@ import org.usfirst.frc.team4610.robot.subsystems.ExampleSubsystem;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
+/* cgl import ctre phoenix encoder information
+ * the FeedbackDevice should be the correct class
+ */
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
+// end of CGL added class calls
+
 /**
  * The VM is configured to automatically run this class, and to call the
  * functions corresponding to each mode, as described in the TimedRobot
@@ -79,6 +87,13 @@ public class Robot extends TimedRobot {
 	Counter liftCounter2 = new Counter(intakeSwitchSwitch);
 	Counter liftCounter3 = new Counter(intakeSwitchScale);
 	int liftMovingTo = 0;
+	
+	/* CGL Notes from CTRE Library
+	 * _tal.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+	 * this appears to be the feedback device code from CTRE.  I am not sure, but it appears that the 
+	 * _tal.....is a variable to call the FeedbackDevice information, but I don't know the
+	 * Java code well enough.
+	 */
 	//EXAMPLE ENCODER THINGS
 	//Encoder exampleEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
 	/*sampleEncoder.setMaxPeriod(.1);
