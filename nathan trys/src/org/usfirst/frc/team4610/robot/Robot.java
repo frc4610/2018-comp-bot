@@ -50,16 +50,16 @@ public class Robot extends TimedRobot {
 	// whatever you write here
 	//************update firmware may be nessesary***************
 	//screensteps has more info if needed 
-	//public WPI_TalonSRX driveFrontLeft4 = new WPI_TalonSRX(4);
-	//public WPI_TalonSRX driveFrontRight2 = new WPI_TalonSRX(2);
-	//public WPI_TalonSRX driveRearLeft3 = new WPI_TalonSRX(3);
-	//public WPI_TalonSRX driveRearRight1 = new WPI_TalonSRX(1);
+	public WPI_TalonSRX driveFrontLeft4 = new WPI_TalonSRX(4);
+	public WPI_TalonSRX driveFrontRight2 = new WPI_TalonSRX(2);
+	public WPI_TalonSRX driveRearLeft3 = new WPI_TalonSRX(3);
+	public WPI_TalonSRX driveRearRight1 = new WPI_TalonSRX(1);
 	//being depricated isnt an issue 
-	//RobotDrive chassis=new RobotDrive(driveFrontRight2, driveRearRight1 , driveFrontLeft4, driveRearLeft3 );
+	RobotDrive chassis=new RobotDrive(driveFrontRight2, driveRearRight1 , driveFrontLeft4, driveRearLeft3 );
 	Joystick gamePad=new Joystick(0);
 	Joystick control=new Joystick(1);
-	//Compressor c1=new Compressor();
-	//DoubleSolenoid s1=new DoubleSolenoid(1,2);
+	Compressor c1=new Compressor();
+	DoubleSolenoid s1=new DoubleSolenoid(1,2);
 	Command m_autonomousCommand;
 	SendableChooser<Command> m_chooser = new SendableChooser<>();
 	//user input for robot position
@@ -80,20 +80,20 @@ public class Robot extends TimedRobot {
 	boolean intakeAuto2 = true;
 	// the following is for the lift 
 	WPI_TalonSRX lift7=new WPI_TalonSRX(7);
-	int liftPosition = 1;
+	//int liftPosition = 1;
 	/*DigitalInput liftSwitchLowest = new DigitalInput(8);
 	DigitalInput intakeSwitchSwitch = new DigitalInput(7);
 	DigitalInput intakeSwitchScale = new DigitalInput(6);
 	Counter liftCounter1 = new Counter(liftSwitchLowest);
 	Counter liftCounter2 = new Counter(intakeSwitchSwitch);
 	Counter liftCounter3 = new Counter(intakeSwitchScale);*/
-	//int liftPosition = 0; TRACKS POSITION IN COUNTS OF ENCODER -- ADD COUNT WHEN MOVING
-	//int liftBottom = 0; ADD 10-100 MORE COUNTS WHEN MOVING TO RESET
-	//int liftVault = 100; CHANGE	
-	//int liftSwitch = 200; CHANGE
-	//int liftSclae = 300; CHANGE
+	int liftPosition = 0;// TRACKS POSITION IN COUNTS OF ENCODER -- ADD COUNT WHEN MOVING
+	int liftBottom = 0; //ADD 10-100 MORE COUNTS WHEN MOVING TO RESET
+	int liftVault = 100; 	
+	int liftSwitch = 200; 
+	int liftScale = 300;
 	int liftMovingTo = 0;
-	
+	int liftSwitchFrom = 0;
 	//gyro things
 	//AHRS gyro = new AHRS(SerialPort.Port.kUSB1);
 	
@@ -225,7 +225,12 @@ public class Robot extends TimedRobot {
 		//http://www.ctr-electronics.com/downloads/api/java/html/com/ctre/phoenix/motorcontrol/can/WPI_TalonSRX.html
 		//https://github.com/CrossTheRoadElec/Phoenix-Documentation/blob/master/Migration%20Guide.md
 		//https://www.chiefdelphi.com/forums/showthread.php?t=138641
-	//	lift7.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 0);
+		
+		//EXAMPLE CODE
+		//testM.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+		//testM.setSelectedSensorPosition(0, 0 ,10);
+		
+		
 		//lift7.config_kP(.5, 10) ;
 		//lift7.config_kI(0, 10); 
 		//lift7.config_kD(0, 10); 
@@ -259,19 +264,19 @@ public class Robot extends TimedRobot {
 				lift7.set(0);
 			}
 		// following is drive train 
-			//chassis.tankDrive(joy1, joy2);
-			//intakeAuto is a bool to toggele whether the intake
+			chassis.tankDrive(gamePad, control);
+		//intakeAuto is a bool to toggele whether the intake
 			//function is completed auotmatically or when the user releases the button
 			//all the if statements are to allow other code to run
 			
-			//if(joy1.getRawButton(3))
-		//	{
-		//		s1.set(DoubleSolenoid.Value.kForward);
-		//	}
-		//	else if(joy1.getRawButton(4))
-		//	{
-		//		s1.set(DoubleSolenoid.Value.kReverse);
-		
+			if(control.getRawButton(3))
+			{
+				s1.set(DoubleSolenoid.Value.kForward);
+			}
+			else if(control.getRawButton(4))
+			{
+				s1.set(DoubleSolenoid.Value.kReverse);
+			}
 		// following is intake
 			//code is there just commented out until on bot
 			/*if((intakeAuto &&intakeAutoRunning) ||(intakeAuto && inatakeAuto2 &&control.getRawButton(5)))
@@ -292,7 +297,7 @@ public class Robot extends TimedRobot {
 					//add a lift code to vault position
 				}
 			}	
-			else if(control.getRawButton(5))
+			else */if(control.getRawButton(5))
 			{
 				intakeLeft5.set(-1);
 				intakeRight6.set(1);
@@ -301,10 +306,15 @@ public class Robot extends TimedRobot {
 			{
 				intakeLeft5.set(1);
 				intakeRight6.set(-1);
-				intakeFixer = false;
-				intakeAuto2 = true;
+				//intakeFixer = false;
+				//intakeAuto2 = true;
 			}
-			else 
+			else
+			{
+				intakeLeft5.set(0);
+				intakeRight6.set(0);
+			}
+			/*else 
 			{
 				if(!intakeFixer)
 				{				
@@ -408,30 +418,60 @@ public class Robot extends TimedRobot {
 			
 			
 			//lift with encoder
-			/*if(control.getRawButton(7))
+			// USE 	---->	testM.setSelectedSensorPosition(0, 0 ,10);
+			if(liftMovingTo == 1||(liftMovingTo == 0 &&control.getRawButton(7)))
 			{
-				if(liftPosition != liftBottom)
+				if(lift7.getSelectedSensorPosition(0) > liftBottom)
 				{
-					lift7.set(liftPosition + 50);
-					liftPosition = 0;
+					lift7.set(1); //should be inverted, check
+					liftMovingTo = 1;
+				}
+				else
+				{
+					lift7.set(0);
+					liftMovingTo = 0;
+					liftPosition = liftBottom;
+					lift7.setSelectedSensorPosition(liftBottom, 0, 10);
 				}
 			}
-			else if(control.getRawButton(9)))
+			else if(liftMovingTo == 2||(liftMovingTo == 0 &&control.getRawButton(7)))
 			{
-				if(liftPosition != lift)
+				if(lift7.getSelectedSensorPosition(0) > liftSwitch && liftSwitchFrom != 2)
 				{
-					lift7.set(-liftSwitch + liftPosition);
+					lift7.set(1); //should be inverted, check
+					liftMovingTo = 2;  
+					liftSwitchFrom = 1;
+				}
+				else if(lift7.getSelectedSensorPosition(0) < liftSwitch && liftSwitchFrom != 1)
+				{
+					lift7.set(-1); //should be inverted, check
+					liftMovingTo = 2;
+					liftSwitchFrom = 2;
+				}
+				else
+				{
+					lift7.set(0);
+					liftSwitchFrom = 0;
+					liftMovingTo = 0;
 					liftPosition = liftSwitch;
+					lift7.setSelectedSensorPosition(liftSwitch, 0, 10);
 				}
 			}
-			if (control.getRawButton(11)))
+			else if (liftMovingTo ==3||(liftMovingTo == 0 &&control.getRawButton(7)))
 				{
-				if(liftPosition != lift)
-				{
-					lift7.set(-liftScale + liftPosition);
-					liftPosition = liftScale;
-				}	
-				}*/
+					if(lift7.getSelectedSensorPosition(0) < liftScale)
+					{
+						lift7.set(-1); //should be inverted, check
+						liftMovingTo = 3;
+					}
+					else
+					{
+						lift7.set(0);
+						liftMovingTo = 0;
+						liftPosition = liftScale;
+						lift7.setSelectedSensorPosition(liftScale, 0, 10);
+					}
+				}
 			
 			//following is lift manual
 			/*
