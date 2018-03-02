@@ -52,7 +52,10 @@ public class Robot extends TimedRobot {
 	//screensteps has more info if needed 
 	//1.734 inches -- motor perimeter
 	// ~ 4100 pulses per rotation
-	
+	//IGNOREintake ~ 0inches off ground (subtract from needed distance to go)
+	//switch max height ~15 in (pg 3.4.1) -from actual ground 35467
+	//scale ~ 6 ft.-from actual ground 170242
+	//vault ~ 1.75 in-from actual ground 4137 
 	
 	public WPI_TalonSRX driveFrontLeft4 = new WPI_TalonSRX(4);
 	public WPI_TalonSRX driveFrontRight2 = new WPI_TalonSRX(2);
@@ -93,9 +96,9 @@ public class Robot extends TimedRobot {
 	Counter liftCounter3 = new Counter(intakeSwitchScale);*/
 	int liftPosition = 0;// TRACKS POSITION IN COUNTS OF ENCODER -- ADD COUNT WHEN MOVING
 	int liftBottom = 0; //ADD 10-100 MORE COUNTS WHEN MOVING TO RESET
-	int liftVault = 100; 	
-	int liftSwitch = 200; 
-	int liftScale = 300;
+	int liftVault = 4137; 	
+	int liftSwitch = 35467; 
+	int liftScale = 170242;
 	int liftMovingTo = 0;
 	int liftSwitchFrom = 0;
 	//gyro things
@@ -254,19 +257,23 @@ public class Robot extends TimedRobot {
 	public void teleopPeriodic() {
 		while(isOperatorControl()&&isEnabled())
 		{
+			//lift manual override
 			if(control.getRawButton(8))
 			{
 				//lift7.set(Controlmode.Position, 0);
 				lift7.set(1);
+				liftMovingTo = 0;
 			}
 			else if(control.getRawButton(10))
 			{
 				lift7.set(-1);
+				liftMovingTo = 0;
 			}
-			else
+			else if(liftMovingTo == 0 && !(control.getRawButton(7)||control.getRawButton(9)||control.getRawButton(11)))
 			{
 				lift7.set(0);
 			}
+			
 		// following is drive train 
 			chassis.tankDrive(gamePad, control);
 		//intakeAuto is a bool to toggele whether the intake
@@ -421,6 +428,7 @@ public class Robot extends TimedRobot {
 				}*/
 			
 			
+			
 			//lift with encoder
 			// USE 	---->	testM.setSelectedSensorPosition(0, 0 ,10);
 			if(liftMovingTo == 1||(liftMovingTo == 0 &&control.getRawButton(7)))
@@ -435,10 +443,9 @@ public class Robot extends TimedRobot {
 					lift7.set(0);
 					liftMovingTo = 0;
 					liftPosition = liftBottom;
-					lift7.setSelectedSensorPosition(liftBottom, 0, 10);
 				}
 			}
-			else if(liftMovingTo == 2||(liftMovingTo == 0 &&control.getRawButton(7)))
+			else if(liftMovingTo == 2||(liftMovingTo == 0 &&control.getRawButton(9)))
 			{
 				if(lift7.getSelectedSensorPosition(0) > liftSwitch && liftSwitchFrom != 2)
 				{
@@ -458,10 +465,9 @@ public class Robot extends TimedRobot {
 					liftSwitchFrom = 0;
 					liftMovingTo = 0;
 					liftPosition = liftSwitch;
-					lift7.setSelectedSensorPosition(liftSwitch, 0, 10);
 				}
 			}
-			else if (liftMovingTo ==3||(liftMovingTo == 0 &&control.getRawButton(7)))
+			else if (liftMovingTo ==3||(liftMovingTo == 0 &&control.getRawButton(11)))
 				{
 					if(lift7.getSelectedSensorPosition(0) < liftScale)
 					{
@@ -473,9 +479,9 @@ public class Robot extends TimedRobot {
 						lift7.set(0);
 						liftMovingTo = 0;
 						liftPosition = liftScale;
-						lift7.setSelectedSensorPosition(liftScale, 0, 10);
 					}
 				}
+			
 			
 			//following is lift manual
 			/*
