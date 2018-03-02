@@ -46,10 +46,14 @@ public class Robot extends TimedRobot {
 	public static OI m_oi;
 	//the wpi talons are the 4 motors for the drive base 
 	//in order to address (the number in parantehesis, look at the internet
-	// explorer (which is needed) page 172.22.11.2 if using usb to address the cam motors to
+	// explorer (which is needed) pagec if using usb to address the cam motors to
 	// whatever you write here
 	//************update firmware may be nessesary***************
 	//screensteps has more info if needed 
+	//1.734 inches -- motor perimeter
+	// ~ 4100 pulses per rotation
+	
+	
 	public WPI_TalonSRX driveFrontLeft4 = new WPI_TalonSRX(4);
 	public WPI_TalonSRX driveFrontRight2 = new WPI_TalonSRX(2);
 	public WPI_TalonSRX driveRearLeft3 = new WPI_TalonSRX(3);
@@ -227,8 +231,8 @@ public class Robot extends TimedRobot {
 		//https://www.chiefdelphi.com/forums/showthread.php?t=138641
 		
 		//EXAMPLE CODE
-		//testM.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
-		//testM.setSelectedSensorPosition(0, 0 ,10);
+		lift7.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+		lift7.setSelectedSensorPosition(0, 0 ,10);
 		
 		
 		//lift7.config_kP(.5, 10) ;
