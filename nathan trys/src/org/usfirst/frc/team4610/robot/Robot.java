@@ -30,8 +30,8 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.kauailabs.navx.frc.AHRS;
-import com.kauailabs.navx.frc.AHRS.SerialDataType;
+//import com.kauailabs.navx.frc.AHRS;
+//import com.kauailabs.navx.frc.AHRS.SerialDataType;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -74,7 +74,7 @@ public class Robot extends TimedRobot {
 	RobotDrive chassis=new RobotDrive(driveFrontRight2, driveRearRight1 , driveFrontLeft4, driveRearLeft3 );
 	Joystick gamePadL =new Joystick(0);
 	Joystick gamePadR = new Joystick(1);
-	//Joystick control=new Joystick(2);
+	Joystick control=new Joystick(2);
 	Compressor c1=new Compressor();
 	DoubleSolenoid driverDs12=new DoubleSolenoid(1,2);
 	DoubleSolenoid intakeDs34=new DoubleSolenoid(3,4);
@@ -132,7 +132,7 @@ public class Robot extends TimedRobot {
 	//Encoder liftEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
 	//liftEncoder.setDistancePerPulse(5);
 	//WPI_TalonSRX liftBackup8=new WPI_TalonSRX(8);
-	
+	int autoTestCounter = 0;
 	
 	// this section is for the climber
 		WPI_TalonSRX climbLeft9=new WPI_TalonSRX(9);
@@ -145,7 +145,6 @@ public class Robot extends TimedRobot {
 	public void robotInit() {
 		m_oi = new OI();
 		m_chooser.addDefault("Default Auto", new ExampleCommand());
-		CameraServer.getInstance().startAutomaticCapture();
 		//_rearRightDrive.follow(_frontRightDrive);
 		//_rearLeftDrive.follow(_frontLeftDrive);
 		// chooser.addObject("My Auto", new MyAutoCommand());
@@ -182,7 +181,8 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		boolean autoRan = false;
+		autoRan = false;
+		CameraServer.getInstance().startAutomaticCapture();
 		m_autonomousCommand = m_chooser.getSelected();
 		position.addObject("Left", "L");
 		position.addDefault("Middle", "M");
@@ -192,7 +192,8 @@ public class Robot extends TimedRobot {
 		lift7.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 		lift7.setSelectedSensorPosition(0, 0 ,10);
 		driverDs12.set(DoubleSolenoid.Value.kForward);
-		intakeDs34.set(DoubleSolenoid.Value.kReverse);
+		intakeDs34.set(DoubleSolenoid.Value.kForward);
+		autoTestCounter =0;
 		// ***put back in for testing ***gameData = "LRR";
 		/*
 		 * String autoSelected = SmartDashboard.getString("Auto Selector",
@@ -212,12 +213,18 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
+		
 		if(!autoRan)
 		{
-		chassis.tankDrive(-.5, -.5);
-		Timer.delay(3);
-		autoRan = true;
+			chassis.tankDrive(.5, .5);
+			if(autoTestCounter >= 200)//use intakeFixerTest for 20k number
+			{
+				chassis.tankDrive(0,0);
+				autoRan = true;
+			}
+			autoTestCounter += 1;
 		}
+		
 	/*	//gyro.getAngle() for angle in auto
 		
 			//commented out till testing
@@ -352,8 +359,8 @@ public class Robot extends TimedRobot {
 		//Config for encoder
 		lift7.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 		lift7.setSelectedSensorPosition(0, 0 ,10);
-		intakeDs34.set(DoubleSolenoid.Value.kReverse);
-		intakePos = 2;
+		intakeDs34.set(DoubleSolenoid.Value.kForward);
+		intakePos = 1;
 		intakeSafe = true;
 		
 		//lift7.config_kP(.5, 10) ;
@@ -392,7 +399,7 @@ public class Robot extends TimedRobot {
 			}*/
 			
 		// following is drive train 
-			chassis.tankDrive(gamePadL, gamePadR);
+			chassis.tankDrive(gamePadR, gamePadL);
 		//intakeAuto is a bool to toggele whether the intake
 			//function is completed auotmatically or when the user releases the button
 			//all the if statements are to allow other code to run
@@ -450,13 +457,13 @@ public class Robot extends TimedRobot {
 			}	
 			
 			else */
-			if(gamePadL.getRawButton(3))
+			if(control.getRawButton(3))
 			{
 				intakeLeft5.set(-1);
 				intakeRight6.set(1);
 				
 			}
-			else if(gamePadL.getRawButton(4))
+			else if(control.getRawButton(4))
 			{
 				intakeLeft5.set(1);
 				intakeRight6.set(-1);
