@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -32,6 +33,7 @@ import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 //import com.kauailabs.navx.frc.AHRS;
 //import com.kauailabs.navx.frc.AHRS.SerialDataType;
+import com.kauailabs.navx.frc.AHRS;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -80,15 +82,25 @@ public class Robot extends TimedRobot {
 	DoubleSolenoid intakeDs34=new DoubleSolenoid(3,4);
 	Command m_autonomousCommand;
 	SendableChooser<Command> m_chooser = new SendableChooser<>();
+	
+	//things to maintain auto
+	int autoTimer = 0;
+	double autoMoveSpeed = .5;
+	int autoTimeSec = 0;
+	boolean isTurning = false;
+	int autoStage;
+
 	//user input for robot position
 	SendableChooser<String> position = new SendableChooser<>();
 	String gameData = DriverStation.getInstance().getGameSpecificMessage();
 	String testPosition = "";
+	
 	//Things for automated intake
 	/*boolean intakeAuto = true;
 	boolean intakeAutoRunning = false;
 	DigitalInput intakeSwitch = new DigitalInput(9);*/
 		 //commented out code for things not get on the bot 
+	
 	 //the folowing is for the intake/outake 
 	WPI_TalonSRX intakeLeft5 = new WPI_TalonSRX(5);
 	WPI_TalonSRX intakeRight6 = new WPI_TalonSRX(6); 
@@ -96,10 +108,12 @@ public class Robot extends TimedRobot {
 	//boolean intakeFixer = false;
 	//int intakeFixCounter = 0;
 	//boolean intakeAuto2 = true;
+	
 	// the following is for the lift 
 	WPI_TalonSRX lift7=new WPI_TalonSRX(7);
 	int intakePos = 2;
 	boolean intakeSafe = true;
+	
 	//int liftPosition = 1;
 	/*DigitalInput liftSwitchLowest = new DigitalInput(8);
 	DigitalInput intakeSwitchSwitch = new DigitalInput(7);
@@ -115,8 +129,9 @@ public class Robot extends TimedRobot {
 	int liftMovingTo = 0; //1 is bottom, 2 is switch, 3 is scale, 4 is vault
 	int liftSwitchFrom = 0;*/
 	boolean autoRan = false;
+	
 	//gyro things
-	//AHRS gyro = new AHRS(SerialPort.Port.kUSB1);
+	AHRS gyro = new AHRS(SPI.Port.kMXP);
 	
 	//EXAMPLE ENCODER THINGS --- only if into digital ports
 	//Encoder exampleEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
@@ -129,9 +144,11 @@ public class Robot extends TimedRobot {
 	sampleEncoder.reset();
 	USE .get TO FIND THESE THINGS
 	*/
+	
 	//Encoder liftEncoder = new Encoder(0, 1, false, Encoder.EncodingType.k4X);
 	//liftEncoder.setDistancePerPulse(5);
 	//WPI_TalonSRX liftBackup8=new WPI_TalonSRX(8);
+	
 	int autoTestCounter = 0;
 	
 	// this section is for the climber
@@ -194,6 +211,11 @@ public class Robot extends TimedRobot {
 		driverDs12.set(DoubleSolenoid.Value.kForward);
 		intakeDs34.set(DoubleSolenoid.Value.kForward);
 		autoTestCounter =0;
+		autoTimer = 0;
+		autoTimeSec = 0;
+		isTurning = false;
+		gyro.reset();
+		autoStage = 1;
 		// ***put back in for testing ***gameData = "LRR";
 		/*
 		 * String autoSelected = SmartDashboard.getString("Auto Selector",
@@ -213,16 +235,85 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		
-		if(!autoRan)
+		testPosition = position.getSelected();
+		if(testPosition.charAt(0) != 'R')
 		{
-			chassis.tankDrive(.5, .5);
-			if(autoTestCounter >= 200)//use intakeFixerTest for 20k number
+			if(!autoRan) //**OLD CODE FOR MOVE FORWARD**
+		
+			{
+				chassis.tankDrive(autoMoveSpeed, autoMoveSpeed);
+				if(autoTestCounter >= 200)//use intakeFixerTest for 20k number
+				{
+					chassis.tankDrive(0,0);
+					autoRan = true;
+				}
+				autoTestCounter += 1;
+			}
+		}
+		else
+		{
+			if(autoStage == 1)
+			{
+				if(autoTimeSec >= 3.8)
+				{
+					autoStage = 2;
+					isTurning = true;
+				}
+			}
+			else if(autoStage == 2)
+			{
+				if()//insert whatever we're measuring for the turning, i know it is sideways, make it a range for lack of pid.
+				{
+					autoStage = 3;
+					isTurning = false;
+					//autoTimer += 1000;//add a full second to maintain the order, non-essential
+				
+				}
+			}
+			else if(autoStage == 3)
+			{
+			if(autoTimeSec >= 7.6)
+				{
+					autoStage = 4;
+				
+				}
+			}
+			else if(autoStage == 4)
+			{
+				if(autoTimeSec >= 8.1)
+				{
+					autoStage = 5;
+				}
+			}
+			if(autoStage == 1)
+			{
+				chassis.tankDrive(autoMoveSpeed,autoMoveSpeed);
+			}
+			else if(autoStage == 2)
+			{
+				chassis.tankDrive(autoMoveSpeed, -autoMoveSpeed);
+			}
+			else if(autoStage == 3)
+			{
+				chassis.tankDrive(-autoMoveSpeed,-autoMoveSpeed);
+			}
+			else if(autoStage == 4)
 			{
 				chassis.tankDrive(0,0);
-				autoRan = true;
+				intakeLeft5.set(1);
+				intakeRight6.set(-1);
 			}
-			autoTestCounter += 1;
+			else
+			{
+				chassis.tankDrive(0,0);
+				intakeLeft5.set(0);
+				intakeRight6.set(0);
+			}
+			if(!isTurning)
+			{
+			autoTimer += 20; //Divide by 1000 for time in seconds, auto periodic is called every 20 ms
+			autoTimeSec = autoTimer / 1000;
+			}
 		}
 		
 	/*	//gyro.getAngle() for angle in auto
