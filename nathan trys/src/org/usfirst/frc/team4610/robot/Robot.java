@@ -175,9 +175,11 @@ public class Robot extends TimedRobot {
 		priority.addObject("Switch", "S");
 		priority.addObject("Vault", "V");
 		priority.addDefault("Move Forward", "M");
-		SmartDashboard.putData("Auto Mode", priority);
+		SmartDashboard.putData("Auto Priority", priority);
 		m_oi = new OI();
 		m_chooser.addDefault("Default Auto", new ExampleCommand());
+		//CameraServer.getInstance().startAutomaticCapture();
+		CamServer useless=new CamServer(640,480,true);
 		//_rearRightDrive.follow(_frontRightDrive);
 		//_rearLeftDrive.follow(_frontLeftDrive);
 		// chooser.addObject("My Auto", new MyAutoCommand());
@@ -215,7 +217,6 @@ public class Robot extends TimedRobot {
 	@Override
 	public void autonomousInit() {
 		autoRan = false;
-		CameraServer.getInstance().startAutomaticCapture();
 		m_autonomousCommand = m_chooser.getSelected();
 		position.addObject("Left", "L");
 		position.addDefault("Middle", "M");
@@ -256,7 +257,7 @@ public class Robot extends TimedRobot {
 		testPriority = priority.getSelected();
 
 	
-		if(testPosition.charAt(0) == 'R' && testPriority.charAt(0) == 'V')
+		/*if(testPosition.charAt(0) == 'R' && testPriority.charAt(0) == 'V')
 		{
 			if(autoStage == 1)
 			{
@@ -325,7 +326,7 @@ public class Robot extends TimedRobot {
 		{
 			if(autoStage == 1)
 			{
-				if(autoTimeSec >= 2.8)
+				if(autoTimeSec >= 2)
 				{
 					autoStage = 2;
 					isTurning = true;
@@ -351,14 +352,14 @@ public class Robot extends TimedRobot {
 			}
 			else if(autoStage == 4)
 			{
-				if(autoTimeSec >= 3.8)
+				if(autoTimeSec >= 3)
 				{
 					autoStage = 5;
 				}
 			}
 			else if(autoStage == 5)
 			{
-				if(autoTimeSec >= 4.8)
+				if(autoTimeSec >= 4)
 				{
 					autoStage = 6;
 				}
@@ -400,7 +401,7 @@ public class Robot extends TimedRobot {
 			}
 		}
 		else
-			{
+			{*/
 				if(!autoRan) //**OLD CODE FOR MOVE FORWARD**
 			
 				{
@@ -412,7 +413,7 @@ public class Robot extends TimedRobot {
 					}
 					autoTestCounter += 1;
 				}
-			}
+			//}
 			
 		
 	/*	//gyro.getAngle() for angle in auto
@@ -571,8 +572,8 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		while(isOperatorControl()&&isEnabled())
-		{
+		//while(isOperatorControl()&&isEnabled())
+		//{
 			//lift manual override
 			if(control.getRawButton(8)&&lift7.getSelectedSensorPosition(0) > liftSwitch)
 			{
@@ -901,7 +902,8 @@ public class Robot extends TimedRobot {
 			}*/
 		
 		Scheduler.getInstance().run();
-	}}
+	}
+	//}
 //	}
 
 	/**
