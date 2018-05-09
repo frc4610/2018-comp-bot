@@ -88,7 +88,7 @@ public class Robot extends TimedRobot {
 	
 	//things to maintain auto
 	int autoTimer = 0;
-	double autoMoveSpeed = .5;
+	double autoMoveSpeed = .5;//was at .5
 	double autoLiftSpeed = .4;
 	int autoTimeSec = 0;
 	boolean isTurning = false;
@@ -130,9 +130,9 @@ public class Robot extends TimedRobot {
 	Counter liftCounter2 = new Counter(intakeSwitchSwitch);
 	Counter liftCounter3 = new Counter(intakeSwitchScale);*/
 	int liftPosition = 0;// TRACKS POSITION IN COUNTS OF ENCODER -- ADD COUNT WHEN MOVING
-	int liftBottom = -250; //ADD 10-100 MORE COUNTS WHEN MOVING TO RESET
+	int liftBottom = -250; //ADD  MORE COUNTS WHEN MOVING TO CONFIG --> 500-1500
 	int liftVault = -1781; 	
-	int liftSwitch = -16500; //17188 is the cap
+	int liftSwitch = -17000; //17188 is the cap
 	int liftScale = -79388;
 	int liftMovingTo = 0; //1 is bottom, 2 is switch, 3 is scale, 4 is vault
 	int liftSwitchFrom = 0;
@@ -172,17 +172,16 @@ public class Robot extends TimedRobot {
 		position.addDefault("Middle", "M");
 		position.addObject("Right", "R");
 		SmartDashboard.putData("Auto Mode", position);
-		priority.addObject("Switch", "S");
+		/*priority.addObject("Switch", "S");
 		priority.addObject("Vault", "V");
 		priority.addDefault("Move Forward", "M");
-		SmartDashboard.putData("Auto Priority", priority);
+		SmartDashboard.putData("Auto Priority", priority);*/
+		lift7.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+		lift7.setSelectedSensorPosition(0, 0 ,10);
 		m_oi = new OI();
 		m_chooser.addDefault("Default Auto", new ExampleCommand());
-		//CameraServer.getInstance().startAutomaticCapture();
 		CamServer useless=new CamServer(640,480,true);
-		//_rearRightDrive.follow(_frontRightDrive);
-		//_rearLeftDrive.follow(_frontLeftDrive);
-		// chooser.addObject("My Auto", new MyAutoCommand());
+		// Deleted repetitive and old code
 		//this is one option we have. also we can set it to inverted 
 		
 		//SmartDashboard.putData("Auto mode", m_chooser);
@@ -216,16 +215,16 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void autonomousInit() {
+		lift7.setSelectedSensorPosition(0, 0 ,10);
 		autoRan = false;
 		m_autonomousCommand = m_chooser.getSelected();
-		position.addObject("Left", "L");
+		/*position.addObject("Left", "L");//In robot init
 		position.addDefault("Middle", "M");
 		position.addObject("Right", "R");
-		SmartDashboard.putData("Auto Mode", position);
+		SmartDashboard.putData("Auto Mode", position);*/
 		testPosition = position.getSelected();
 		testPriority = priority.getSelected();
-		lift7.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
-		lift7.setSelectedSensorPosition(0, 0 ,10);
+		
 		driverDs12.set(DoubleSolenoid.Value.kForward);
 		intakeDs34.set(DoubleSolenoid.Value.kForward);
 		autoTestCounter =0;
@@ -256,137 +255,169 @@ public class Robot extends TimedRobot {
 		testPosition = position.getSelected();
 		testPriority = priority.getSelected();
 
-	
-		/*if(testPosition.charAt(0) == 'R' && testPriority.charAt(0) == 'V')
+	//old auto code - deleted
+	// Auto code is split into 2 parts per new code
+	//First controls the current/changing stage
+	//Second actually does the appropriate action commented in control section
+		
+		//AUTO WITH STUTTER
+		if(testPosition.charAt(0) != 'M')
 		{
+			
 			if(autoStage == 1)
 			{
-				if(autoTimeSec >= 2.8)
-				{
-					autoStage = 2;
-					isTurning = true;
-				}
-			}
-			else if(autoStage == 2)
-			{
-				if(gyro.getAngle() >= 29.8)//insert whatever we're measuring for the turning, i know it is sideways, make it a range for lack of pid.
-				{
-					autoStage = 3;
-					isTurning = false;
-					//autoTimer += 1000;//add a full second to maintain the order, non-essential
-				
-				}
-			}
-			else if(autoStage == 3)
-			{
-			if(autoTimeSec >= 5.3)
-				{
-					autoStage = 4;
-				
-				}
-			}
-			else if(autoStage == 4)
-			{
-				if(autoTimeSec >= 6.3)
-				{
-					autoStage = 5;
-				}
-			}
-			if(autoStage == 1)
-			{
-				chassis.tankDrive(autoMoveSpeed,autoMoveSpeed);
-			}
-			else if(autoStage == 2)
-			{
-				chassis.tankDrive(autoMoveSpeed, -autoMoveSpeed);
-			}
-			else if(autoStage == 3)
-			{
-				chassis.tankDrive(-autoMoveSpeed,-autoMoveSpeed);
-			}
-			else if(autoStage == 4)
-			{
-				chassis.tankDrive(0,0);
-				intakeLeft5.set(1);
-				intakeRight6.set(-1);
-			}
-			else
-			{
-				chassis.tankDrive(0,0);
-				intakeLeft5.set(0);
-				intakeRight6.set(0);
-			}
-			if(!isTurning)
-			{
-			autoTimer += 20; //Divide by 1000 for time in seconds, auto periodic is called every 20 ms
-			autoTimeSec = autoTimer / 1000;
-			}
-		}
-		else if(testPriority.charAt(0) == 'S' && testPosition.charAt(0) == gameData.charAt(0))
-		{
-			if(autoStage == 1)
-			{
+				//Slightly forward
 				if(autoTimeSec >= 2)
 				{
 					autoStage = 2;
-					isTurning = true;
 				}
 			}
 			else if(autoStage == 2)
 			{
-				if(gyro.getAngle() >= 180)//insert whatever we're measuring for the turning, i know it is sideways, make it a range for lack of pid.
+				//Slightly backward
+				if(autoTimeSec >= 3)
 				{
 					autoStage = 3;
-					//autoTimer += 1000;//add a full second to maintain the order, non-essential
-				
 				}
 			}
 			else if(autoStage == 3)
 			{
-			if(lift7.getSelectedSensorPosition(0) >= liftSwitch)
+				//Lift up to switch
+				isTurning = true;
+				if(lift7.getSelectedSensorPosition(0) <= liftSwitch)
 				{
 					autoStage = 4;
 					isTurning = false;
-				
 				}
 			}
 			else if(autoStage == 4)
 			{
-				if(autoTimeSec >= 3)
+				//Finishes moving forward
+				if(autoTimeSec >= 6)
 				{
-					autoStage = 5;
+					//Ends code or shoots cube based on switch position relative to robot position
+					if(testPosition.charAt(0) == gameData.charAt(0))
+					{
+						autoStage = 5;
+					}
+					else
+					{
+						autoStage = 6;
+					}
 				}
 			}
 			else if(autoStage == 5)
 			{
-				if(autoTimeSec >= 4)
+				//Shoots out cube
+				if(autoTimeSec >= 7)
 				{
 					autoStage = 6;
 				}
 			}
+			
 			if(autoStage == 1)
 			{
-				chassis.tankDrive(autoMoveSpeed,autoMoveSpeed);
+				chassis.tankDrive(-autoMoveSpeed, -autoMoveSpeed);
 			}
 			else if(autoStage == 2)
 			{
-				chassis.tankDrive(autoMoveSpeed, -autoMoveSpeed);
+				chassis.tankDrive(autoMoveSpeed, autoMoveSpeed);
 			}
 			else if(autoStage == 3)
 			{
-				chassis.tankDrive(0,0);
+				chassis.tankDrive(0, 0);
 				lift7.set(-autoLiftSpeed);
 			}
 			else if(autoStage == 4)
 			{
 				lift7.set(0);
-				chassis.tankDrive(autoMoveSpeed,autoMoveSpeed);
+				chassis.tankDrive(-autoMoveSpeed,-autoMoveSpeed);
 			}
 			else if (autoStage == 5)
 			{
 				chassis.tankDrive(0,0);
-				intakeLeft5.set(1);
-				intakeRight6.set(-1);
+				intakeLeft5.set(-1);//inverted
+				intakeRight6.set(1);
+			}
+			else
+			{
+				//Stops all motors when done 
+				chassis.tankDrive(0,0);
+				intakeLeft5.set(0);
+				intakeRight6.set(0);
+			}
+			
+			if(!isTurning)
+			{
+				//Keeps timing across auto, not used for turning due to reliance on sensors
+				autoTimer += 20; //Divide by 1000 for time in seconds, auto periodic is called every 20 ms
+				autoTimeSec = autoTimer / 1000;
+			}	
+		}
+			// NO STUTTER AUTO SWITCH
+			/*if(autoStage == 1)
+			{
+				//Move forward
+				if(autoTimeSec >= 2)
+				{
+					autoStage = 2;
+				}
+			}
+			else if(autoStage == 2)
+			{
+				//Lift up to switch
+				isTurning = true;
+				if(lift7.getSelectedSensorPosition(0) >= liftSwitch)//insert whatever we're measuring for the turning, i know it is sideways, make it a range for lack of pid.
+				{
+					autoStage = 3;
+					isTurning = false;
+					//autoTimer += 1000;//add a full second to maintain the order, non-essential
+				}
+			}
+			else if(autoStage == 3)
+			{
+				//Move forward
+				if(autoTimeSec >= 5)
+				{
+					if(testPosition.charAt(0) == gameData.charAt(0))
+					//Shoot out cube if right switch position, end code if not
+					{
+						autoStage = 4;
+					}
+					else
+					{
+						autoStage = 5;
+					}		
+				}
+			}
+			else if(autoStage == 4)
+			{
+				//Shoot out cube
+				if(autoTimeSec >= 6)
+				{
+					autoStage = 5;
+				}
+			}
+			
+			if(autoStage == 1)
+			{
+				chassis.tankDrive(-autoMoveSpeed,-autoMoveSpeed);
+			}
+			else if(autoStage == 2)
+			{
+				lift7.set(-autoLiftSpeed);
+				chassis.tankDrive(0,0);
+			}
+			else if(autoStage == 3)
+			{
+				chassis.tankDrive(-autoMoveSpeed,-autoMoveSpeed);
+				lift7.set(0);
+			}
+			else if(autoStage == 4)
+			{
+				chassis.tankDrive(0,0);
+				intakeLeft5.set(-1);//inverted
+				intakeRight6.set(1);
 			}
 			else
 			{
@@ -396,147 +427,101 @@ public class Robot extends TimedRobot {
 			}
 			if(!isTurning)
 			{
-			autoTimer += 20; //Divide by 1000 for time in seconds, auto periodic is called every 20 ms
-			autoTimeSec = autoTimer / 1000;
-			}
-		}
-		else
-			{*/
-				if(!autoRan) //**OLD CODE FOR MOVE FORWARD**
+				autoTimer += 20; //Divide by 1000 for time in seconds, auto periodic is called every 20 ms
+				autoTimeSec = autoTimer / 1000;
+			}*/
+		
+		
+		
+		//Potential auto code if gyro starts to function
+		/*
+		 if(autoStage == 1)
+		 {
+		 	//Turn left/right accordingly
+		 	isTurning = true;
+		 	if(gameData.getCharAt(0) == 'L' && gyro.getAngle() >= 30)//value may change
+		 		autoStage = 2;
+		 		isTurning = false;
+		 	}
+		 	else if (gameData.getCharAt(0) == 'R'&&gyro.getAngle() <= 30)//value may change
+		 	{
+		 		autoStage = 2;
+		 		isTurning = false;
+		 	}
+		 }		 
+		 else if (autoStage == 2)
+		 {
+		 //Lift up to switch
+		 	isTurning = true;
+		 	if(lift7.getSelectedSensorPosition(0) >= liftSwitch)
+		 	{
+		 		autoStage = 3;
+		 		isTurning = false;
+		 	}
+		 }
+		 else if(autoStage ==3)
+		 {
+		 	//Forward for 2 seconds 
+		 	if(autoTimeSec >= 2)
+		 	{
+		 		autoStage = 4;
+		 	}
+		 }
+		 else if(autoStage == 4)
+		 {
+		 	//Shoot out cube
+		 	if(autoTimeSec >= 3)
+		 	{
+		 		autoStage = 5;
+		 	}
+		 }
+		 
+		 if(autoStage == 1)
+		 {
+		 	if(gameData.getCharAt(0) == 'L')
+		 		chassis.tankDrive(0, -autoSpeedForward);
+		 	}
+		 	else if (gameData.getCharAt(0) == 'R')
+		 	{
+		 		chassis.tankDrive(-autoSpeedForward, 0);
+		 	}
+		 }
+		 else if(autoStage == 2)
+		 { 
+		 	chassis.tankDrive(0, 0);
+		 	lift7.set(-autoLiftSpeed);
+		 }
+		 else if(autoStage == 3)
+		 {
+		 	lift7.set(0);
+		 	chassis.tankDrive(-autoSpeedForward, -autoSpeedForward);
+		 }
+		 else if(autoStage == 4)
+		 {
+		 	chassis.tankDrive(0, 0);
+		 	intakeLeft5.set(-1);//inverted
+			intakeRight6.set(1);
+		 }
+		 else
+		 {
+		 	chassis.tankDrive(0, 0);
+		 	lift7.set(0);
+		 	intakeLeft5.set(0);
+			intakeRight6.set(0);
+		 }
+		 */
+		
+		 else if (!autoRan) //**OLD CODE FOR MOVE FORWARD**	  - functional don't edit/delete
 			
 				{
-					chassis.tankDrive(autoMoveSpeed, autoMoveSpeed);
-					if(autoTestCounter >= 200)//use intakeFixerTest for 20k number
+					chassis.tankDrive(-autoMoveSpeed, -autoMoveSpeed);
+					if(autoTestCounter >= 250)//use intakeFixerTest for 20k number 50 per second - this is 5 seconds
 					{
 						chassis.tankDrive(0,0);
 						autoRan = true;
 					}
 					autoTestCounter += 1;
 				}
-			//}
-			
-		
-	/*	//gyro.getAngle() for angle in auto
-		
-			//commented out till testing
-			/*chassis.tankDrive(-1, -1);
-			Timer.delay(.5);
-			chassis.tankDrive(1,1);
-			Timer.delay(.5);
-			chassis.tankDrive(0,0);
-			intakeLeft5.set(1);
-			intakeRight6.set(-1);
-			Timer.delay(.5);
-			intakeLeft5.set(0);
-			intakeRight6.set(0);
-			Timer.delay(.5);
-			MOVE LIFT UP TO VAULT
-			*/
-		
-			//Move back and forth then intake cube (should be ready, no moving here)
-			//if((position.getSelected()).charAt(0)==gameData.charAt(1))
-			//{
-				//scale code
-				/*chassis.tankDrive(-1, -1);
-				Timer.delay(.5);
-				chassis.tankDrive(1,1);
-				Timer.delay(.5);
-				chassis.tankDrive(0,0);
-				intakeLeft5.set(1);
-				intakeRight6.set(-1);
-				Timer.delay(.5);
-				driverDs12.set(DoubleSolenoid.Value.kForward);
-				intakeLeft5.set(0);
-				intakeRight6.set(0);
-				Timer.delay(.5);
-				chassis.tankDrive(1,1);
-				Timer.delay(6);
-				chassis.tankDrive(0,0);
-				while(lift7.getSelectedSensorPosition(0) < liftScale)
-				{
-					lift7.set(-.2);
-				}
-				lift7.set(0);
-				while(gyro.getAngle()<90)
-				{
-					if(position.getSelected().charAt(0) == L)
-					{
-					chassis.tankDrive(1,-1);
-					}
-					else if(position.getSelected().charAt(0) == L)
-					{
-					chassis.tankDrive(-1,1);
-					}
-				}
-				intakeLeft5.set(-1);
-				intakeRight6.set(1);
-				Timer.delay(1);
-				intakeLeft5.set(0);
-				intakeRight6.set(0);
-				driverDs12.set(DoubleSolenoid.Value.kReverse);
-				*/
-		//	}
-		//	else if((position.getSelected()).charAt(0)==gameData.charAt(0))
-		//	{
-				//switch code
-				/*chassis.tankDrive(-1, -1);
-				Timer.delay(.5);
-				chassis.tankDrive(1,1);
-				Timer.delay(.5);
-				chassis.tankDrive(0,0);
-				intakeLeft5.set(1);
-				intakeRight6.set(-1);
-				Timer.delay(.5);
-				driverDs12.set(DoubleSolenoid.Value.kForward);
-				intakeLeft5.set(0);
-				intakeRight6.set(0);
-				Timer.delay(.5);
-				chassis.tankDrive(1,1);
-				Timer.delay(4);
-				chassis.tankDrive(0,0);
-				while(lift7.getSelectedSensorPosition(0) < liftSwitch)
-				{
-					lift7.set(-.2);
-				}
-				lift7.set(0);
-				while(gyro.getAngle()<90)
-				{
-					if(position.getSelected().charAt(0) == L)
-					{
-					chassis.tankDrive(1,-1);
-					}
-					else if(position.getSelected().charAt(0) == L)
-					{
-					chassis.tankDrive(-1,1);
-					}
-				}
-				intakeLeft5.set(-1);
-				intakeRight6.set(1);
-				Timer.delay(1);
-				intakeLeft5.set(0);
-				intakeRight6.set(0);
-				driverDs12.set(DoubleSolenoid.Value.kReverse);
-				*/
-		//	}
-		//	else
-			//{
-				//move forward
-				/*chassis.tankDrive(-1, -1);
-				Timer.delay(.5);
-				chassis.tankDrive(1,1);
-				Timer.delay(.5);
-				intakeLeft5.set(1);
-				intakeRight6.set(1);
-				Timer.delay(.5);
-				intakeLeft5.set(0);
-				intakeRight6.set(0);
-				Timer.delay(.5);
-				chassis.tankDrive(1,1);
-				Timer.delay(4);
-				chassis.tankDrive(0,0);
-				*/
-				
-		//}
 		
 		Scheduler.getInstance().run();
 	}
@@ -555,9 +540,6 @@ public class Robot extends TimedRobot {
 		intakeSafe = true;
 		CameraServer.getInstance().startAutomaticCapture();
 
-		//lift7.config_kP(.5, 10) ;
-		//lift7.config_kI(0, 10); 
-		//lift7.config_kD(0, 10); 
 		// This makes sure that the autonomous stops running when
 		// teleop starts running. If you want the autonomous to
 		// continue until interrupted by another command, remove
@@ -572,30 +554,50 @@ public class Robot extends TimedRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		//while(isOperatorControl()&&isEnabled())
-		//{
+		
 			//lift manual override
 			if(control.getRawButton(8)&&lift7.getSelectedSensorPosition(0) > liftSwitch)
-			{
-				lift7.set(-liftSpeed);
-				liftMovingTo = 0;
-			}
-			else if(control.getRawButton(10)&&lift7.getSelectedSensorPosition(0) < liftBottom)
 			{
 				lift7.set(liftSpeed);
 				liftMovingTo = 0;
 			}
+			else if(control.getRawButton(10)&&lift7.getSelectedSensorPosition(0) < liftBottom)
+			{
+				lift7.set(-liftSpeed);
+				liftMovingTo = 0;
+			}
+			//Dangerous override
+			  else if(control.getRawButton(5))
+			{
+				lift7.set(liftSpeed);
+				liftMovingTo = 0;
+			}
+			else if(control.getRawButton(6))
+			{
+				lift7.set(-liftSpeed);
+				liftMovingTo = 0;
+			}
+			
 			else if(liftMovingTo == 0 && !(control.getRawButton(7)||control.getRawButton(9)||control.getRawButton(11)))
 			{
 				lift7.set(0);
 			}
+			 
+			//reset encoder if broke in config - use after dangerous override
+			if(control.getRawButton(12))
+			{
+				lift7.setSelectedSensorPosition(0, 0 ,10);
+			}
+				
 			
-		// following is drive train 
+		// following is drive train - inverted due to negative values of joysticks
 			chassis.tankDrive(gamePadR, gamePadL);
-		//intakeAuto is a bool to toggele whether the intake
+			
+			
+		//intakeAuto is a bool to toggle whether the intake
 			//function is completed auotmatically or when the user releases the button
 			//all the if statements are to allow other code to run
-			//speeed shift
+			//speed shift
 			if(gamePadR.getRawButton(3))
 			{
 				driverDs12.set(DoubleSolenoid.Value.kForward);
@@ -605,8 +607,8 @@ public class Robot extends TimedRobot {
 				driverDs12.set(DoubleSolenoid.Value.kReverse);
 			}
 			
-			//open/close intake when pressed revers  comments for bren/hecti
-			/*if(gamePadR.getRawButton(1))
+			//open/close intake when pressed revers  comments for brendan/hector driver
+			if(gamePadR.getRawButton(1))
 			{
 				if(intakePos == 2 && intakeSafe)
 				{
@@ -624,7 +626,7 @@ public class Robot extends TimedRobot {
 			else
 			{
 				intakeSafe = true;
-			}*/
+			}/*
 			if(gamePadL.getRawButton(3))
 			{
 				if(intakeSafe)
@@ -644,7 +646,9 @@ public class Robot extends TimedRobot {
 			else
 			{
 				intakeSafe = true;
-			}
+			}*/
+			
+			
 		// following is intake - reverse what's commented out for use
 			//code is there just commented out until on bot
 			/*if((intakeAuto &&intakeAutoRunning) ||(intakeAuto && inatakeAuto2 &&control.getRawButton(5)))
@@ -719,80 +723,6 @@ public class Robot extends TimedRobot {
 		
 		*/
 			
-	
-		 //following is lift with switches
-			/*if(liftMovingTo == 1||(liftMovingTo == 0 &&control.getRawButton(7)))
-			{
-				if(liftPosition != 1)
-				{
-					if(intakeCounter.get()>0)
-					{
-						lift7.set(0);
-						liftMovingTo = 0;
-						liftPosition = 1;
-						liftCounter1.reset();
-					}
-					else
-					{
-						lift7.set(-1);
-						liftMovingTo = 1;
-					}
-				}
-			}
-			else if(liftMovingTo == 2||(liftMovingTo == 0 &&control.getRawButton(9)))
-			{
-				if(liftPosition == 1)
-				{
-					if(intakeCounter.get()>0)
-					{
-						lift7.set(0);
-						liftMovingTo = 0;
-						liftPosition = 2;
-						liftCounter2.reset();
-					}
-					else
-					{
-						lift7.set(1);
-						liftMovingTo = 2;
-					}
-				}
-				else if(liftPosition == 3)
-				{
-					if(intakeCounter.get()>0)
-					{
-						lift7.set(0);
-						liftMovingTo = 0;
-						liftPosition = 2;
-						liftCounter2.reset();
-					}
-					else
-					{
-						lift7.set(-1);
-						liftMovingTo = 2;
-					}
-				}
-			}
-			if (liftMovingTo == 3||(liftMovingTo == 0 &&control.getRawButton(11)))
-				{
-				if(liftPosition != 3)
-				{
-					if(intakeCounter.get()>0)
-					{
-						lift7.set(0);
-						liftMovingTo = 0;
-						liftPosition = 3;
-						liftCounter3.reset();
-					}
-					else
-					{
-						lift7.set(1);
-						liftMovingTo = 3;
-					}
-				}	
-				}*/
-			
-			
-			
 			//lift with encoder
 			// USE 	---->	testM.setSelectedSensorPosition(0, 0 ,10);
 			if(liftMovingTo == 1||(liftMovingTo == 0 &&control.getRawButton(7)))
@@ -844,45 +774,10 @@ public class Robot extends TimedRobot {
 						liftMovingTo = 0;
 					}
 				}
-				//useless
-			else if(liftMovingTo == 4)
-			{
-				if(lift7.getSelectedSensorPosition(0) < liftVault && liftSwitchFrom != 2)
-				{
-					lift7.set(1); //should be inverted, check
-					liftMovingTo = 2;  
-					liftSwitchFrom = 1;
-				}
-				else if(lift7.getSelectedSensorPosition(0) > liftVault && liftSwitchFrom != 1)
-				{
-					lift7.set(-1); //should be inverted, check
-					liftMovingTo = 2;
-					liftSwitchFrom = 2;
-				}
-				else
-				{
-					lift7.set(0);
-					liftSwitchFrom = 0;
-					liftMovingTo = 0;
-				}
 			}*/
-			
-			
-			//following is lift manual
-			/*
-			 if(control.getRawButton(6))
-			 {
-			 lift7.set(-10);
-			 }
-			 else if(control.getRawButton(8))
-			 {
-			 lift7.set(10);
-			 }
-			 */
-			
-			
+						
 		// following is climber
-			//**** code is there just commented out untill on bot
+			//**** code is there just commented out until on bot
 			
 		/*	if(control.getRawButton(1))
 			{
@@ -902,9 +797,9 @@ public class Robot extends TimedRobot {
 			}*/
 		
 		Scheduler.getInstance().run();
+		//}
 	}
 	//}
-//	}
 
 	/**
 	 * This function is called periodically during test mode.
